@@ -1,7 +1,16 @@
 {
-  "dependencies": ["./my_agent"],
+  "dockerfile_lines": [],
   "graphs": {
-    "agent": "./my_agent/agent.py:graph"
+    "weather_agent": "./my_agent/agent.py:graph",
+    "guardrail_before": "./my_agent/agent_guardrail_before.py:graph",
+    "guardrail_after": "./my_agent/agent_guardrail_after.py:graph"
   },
-  "env": ".env"
+  "env": [
+    "OPENAI_API_KEY",
+    "TAVILY_API_KEY"
+  ],
+  "python_version": "3.11",
+  "dependencies": [
+    "./my_agent"
+  ]
 }

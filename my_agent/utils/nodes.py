@@ -3,6 +3,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from my_agent.utils.tools import tools
 from langgraph.prebuilt import ToolNode
+from typing import TypedDict
 
 
 @lru_cache(maxsize=4)
@@ -35,7 +36,7 @@ system_prompt = """Be a helpful assistant"""
 def call_model(state, config):
     messages = state["messages"]
     messages = [{"role": "system", "content": system_prompt}] + messages
-    model_name = config.get('configurable', {}).get("model_name", "anthropic")
+    model_name = config.get('configurable', {}).get("model_name", "openai")
     model = _get_model(model_name)
     response = model.invoke(messages)
     # We return a list, because this will get added to the existing list
@@ -43,3 +44,37 @@ def call_model(state, config):
 
 # Define the function to execute tools
 tool_node = ToolNode(tools)
+
+
+about_weather_prompt = """Determine whether the user's most recent question is about weather."""
+
+class AboutWeather(TypedDict):
+    """Is the user's question about weather?"""
+    about_weather: bool
+
+def weather_guardrail(state, config):
+    messages = state["messages"]
+    messages = [{"role": "system", "content": about_weather_prompt}] + messages
+    model_name = config.get('configurable', {}).get("model_name", "openai")
+    model = _get_model(model_name).with_structured_output(AboutWeather)
+    response = model.invoke(messages)
+    # We return a list, because this will get added to the existing list
+    return {"about_weather": response['about_weather']}
+
+
+responds_in_english_prompt = """Determine whether the final assistant response is in English or not."""
+
+
+class IsEnglish(TypedDict):
+    """Is the final assistant response in English?"""
+    is_english: bool
+
+
+def english_guardrail(state, config):
+    messages = state["messages"]
+    messages = [{"role": "system", "content": responds_in_english_prompt}] + messages
+    model_name = config.get('configurable', {}).get("model_name", "openai")
+    model = _get_model(model_name).with_structured_output(IsEnglish)
+    response = model.invoke(messages)
+    # We return a list, because this will get added to the existing list
+    return {"is_english": response['is_english']}

@@ -1,6 +1,14 @@
-from langgraph.graph import add_messages
+from langgraph.graph import add_messages, MessagesState
 from langchain_core.messages import BaseMessage
 from typing import TypedDict, Annotated, Sequence
 
-class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], add_messages]
+class AgentState(MessagesState):
+    pass
+
+
+class AgentGuardrailBeforeState(MessagesState):
+    about_weather: bool
+
+
+class AgentGuardrailAfterState(MessagesState):
+    is_english: bool
